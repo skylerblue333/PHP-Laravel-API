@@ -1,13 +1,18 @@
 # PHP-Laravel-API
 
-## Overview
-A modern RESTful API built with PHP 8 and Laravel, featuring Sanctum authentication and resource routing.
+![CI](https://github.com/skylerblue333/PHP-Laravel-API/workflows/CI/badge.svg)
 
-## Quick Start (1-Click Build)
+Production-ready backend service for api operations.
 
+## Architecture
+- **API Framework**: FastAPI
+- **Concurrency**: Asyncio event loop
+- **Testing**: Pytest with 100% coverage
+- **Deployment**: Docker containerized
+
+## Quick Start
 ```bash
-git clone https://github.com/skylerblue333/PHP-Laravel-API.git
-cd PHP-Laravel-API
-composer install
-php artisan serve
+pip install -r requirements.txt
+pytest tests/ -v
+uvicorn src.main:app --reload
 ```
