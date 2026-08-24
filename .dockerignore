@@ -1,0 +1,11 @@
+.git
+.github
+vendor
+node_modules
+.env
+.env.*
+!.env.example
+tests
+src
+requirements.txt
+package.json
