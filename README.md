@@ -1,44 +1,51 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# Sky PHP Queue API
 
-## Project profile and code-audit snapshot
+Engineering-beta standalone service in the SKYCOIN4444 portfolio.
 
-**What this is:** **PHP-Laravel-API** is a public repository described as: “RESTful API built with modern PHP 8 and Laravel patterns. #SkyCoin4444 #AI #Blockchain #DevOps #Innovation” Its dominant language signals are **Python (4 files)**.
+> Repository-name note: `PHP-Laravel-API` is the historical repository name. The current verified implementation is a dependency-light PHP 8.3 HTTP service; it does **not** claim to be a full Laravel application.
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **18 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+## What it does
 
-**Implementation evidence:** 2 test-related file(s) detected; 2 dependency or package manifest(s) detected; 2 build/CI/infrastructure signal(s) detected; and 3 documentation or governance file(s) detected. Test filenames observed include `tests/__init__.py`, `tests/test_main.py`. Dependency or package files include `package.json`, `requirements.txt`. Build, CI, or infrastructure signals include `Dockerfile`, `.github/workflows/ci.yml`.
+- `POST /api/v1/jobs` validates and enqueues bounded job requests.
+- `GET /api/v1/jobs?limit=10` returns deterministic priority/FIFO ordering.
+- `GET /healthz` provides a liveness endpoint.
+- `GET /readyz` reports readiness and current in-memory queue depth.
+- Duplicate IDs, empty identifiers/types, invalid priorities, and invalid limits are rejected.
+- The runtime container executes as an unprivileged user.
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+## Run locally
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+```bash
+php -S 127.0.0.1:8080 -t public
+```
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+Then:
 
----
+```bash
+curl http://127.0.0.1:8080/healthz
+curl -X POST http://127.0.0.1:8080/api/v1/jobs \
+  -H 'content-type: application/json' \
+  -d '{"job_id":"example-1","job_type":"index-feed","priority":2,"params":{"source":"community"}}'
+```
 
-# Php Laravel Api
+## Verification
 
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/PHP-Laravel-API?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/PHP-Laravel-API?style=flat-square)
+```bash
+find src public tests -name '*.php' -print0 | xargs -0 -n1 php -l
+php tests/JobQueueTest.php
+docker build -t sky-php-api .
+```
 
-## 🌟 Overview
-**PHP-Laravel-API** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **Python**.
+GitHub Actions runs syntax checks, deterministic queue tests, the container build, non-root verification, and an HTTP health smoke test.
 
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
+## Product boundary
 
-## 🛠️ Technology Stack
-- **Primary Domain**: Python
-- **Ecosystem**: SkyCoin4444 Digital Platform
+This checkpoint is an in-memory queue/API foundation. It does **not** claim durable persistence, distributed processing, authentication/authorization, Laravel framework parity, worker execution, HA, tenant isolation, managed deployment, or production SLA readiness. Those capabilities require separate implementation and verification.
 
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
+## SKYCOIN4444 integration targets
 
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
+The service can be adapted as a bounded internal job-ingress component for feed indexing, notifications, media processing, school workflows, marketplace tasks, or other ecosystem modules after authentication, persistence, observability, and deployment controls are added.
 
----
-*Powered by SkyCoin4444*
+## License
+
+See `LICENSE`.
