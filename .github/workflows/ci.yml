@@ -21,11 +21,13 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: PHP syntax
-        run: find app bootstrap public routes -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find app bootstrap public routes tests/Feature -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Laravel boot and routes
         run: |
           cp .env.example .env
           php artisan route:list
+      - name: Feature tests
+        run: composer test
       - name: Pint
         run: vendor/bin/pint --test
       - name: Composer audit
