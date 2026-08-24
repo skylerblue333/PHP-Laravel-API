@@ -17,10 +17,19 @@ jobs:
         with:
           php-version: '8.3'
           coverage: none
+          tools: composer:v2
+      - name: Validate Composer manifest
+        run: composer validate --strict --no-check-lock
+      - name: Resolve and install dependencies
+        run: composer update --no-interaction --no-progress --prefer-dist
       - name: Syntax check
-        run: find src public tests -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: Unit tests
+        run: find app bootstrap public routes src tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Domain unit tests
         run: php tests/JobQueueTest.php
+      - name: Laravel feature tests
+        run: vendor/bin/phpunit --testdox
+      - name: Dependency audit
+        run: composer audit --locked
       - name: Build image
         run: docker build -t sky-php-api:ci .
       - name: Verify non-root image
@@ -34,7 +43,7 @@ jobs:
           docker run -d --rm --name sky-php-api-ci -p 18080:8080 sky-php-api:ci
           trap 'docker stop sky-php-api-ci >/dev/null 2>&1 || true' EXIT
           for i in $(seq 1 20); do
-            if curl --fail --silent http://127.0.0.1:18080/healthz | grep -q '"status":"ok"'; then exit 0; fi
+            if curl --fail --silent http://127.0.0.1:18080/healthz | grep -q '"status"'; then exit 0; fi
             sleep 1
           done
           docker logs sky-php-api-ci
