@@ -11,7 +11,9 @@ final class ApiTest extends TestCase
 {
     protected function defineRoutes($router): void
     {
-        require __DIR__.'/../../routes/api.php';
+        $router->prefix('api')->group(function (): void {
+            require __DIR__.'/../../routes/api.php';
+        });
     }
 
     public function test_health_is_available(): void
