@@ -1,51 +1,65 @@
-# Sky PHP Queue API
+# Sky PHP Queue API — Laravel
 
-Engineering-beta standalone service in the SKYCOIN4444 portfolio.
+**Status: engineering beta.** This repository now contains an actual Laravel 12 API on PHP 8.3, backed by a small in-memory queue domain. CI verifies Composer resolution/audit, PHP syntax, domain and Laravel feature tests, container build, non-root execution, and an HTTP health smoke test. Durable deployment is not verified here.
 
-> Repository-name note: `PHP-Laravel-API` is the historical repository name. The current verified implementation is a dependency-light PHP 8.3 HTTP service; it does **not** claim to be a full Laravel application.
+## Implemented API
 
-## What it does
+- `GET /healthz` — Laravel liveness endpoint.
+- `GET /api/v1/readyz` — readiness plus current in-memory job count.
+- `POST /api/v1/jobs` — enqueue a validated job.
+- `GET /api/v1/jobs?limit=10` — list jobs in deterministic priority/FIFO order.
 
-- `POST /api/v1/jobs` validates and enqueues bounded job requests.
-- `GET /api/v1/jobs?limit=10` returns deterministic priority/FIFO ordering.
-- `GET /healthz` provides a liveness endpoint.
-- `GET /readyz` reports readiness and current in-memory queue depth.
-- Duplicate IDs, empty identifiers/types, invalid priorities, and invalid limits are rejected.
-- The runtime container executes as an unprivileged user.
+A job contains a unique `job_id` (1–100 chars), `job_type` (1–100 chars), optional object-like `params`, and priority 1–10. Lower priority values are returned first; equal priorities retain insertion order. Duplicate IDs and invalid bounds fail closed with client errors.
 
-## Run locally
+## Local verification
 
 ```bash
-php -S 127.0.0.1:8080 -t public
+composer update --no-interaction --prefer-dist
+find app bootstrap public routes src tests -name '*.php' -print0 | xargs -0 -n1 php -l
+php tests/JobQueueTest.php
+vendor/bin/phpunit --testdox
+composer audit --locked
 ```
 
-Then:
+Run locally:
+
+```bash
+cp .env.example .env
+php artisan key:generate
+php -S 127.0.0.1:8080 -t public public/index.php
+```
+
+Example:
 
 ```bash
 curl http://127.0.0.1:8080/healthz
 curl -X POST http://127.0.0.1:8080/api/v1/jobs \
+  -H 'accept: application/json' \
   -H 'content-type: application/json' \
   -d '{"job_id":"example-1","job_type":"index-feed","priority":2,"params":{"source":"community"}}'
 ```
 
-## Verification
+## Container
 
 ```bash
-find src public tests -name '*.php' -print0 | xargs -0 -n1 php -l
-php tests/JobQueueTest.php
 docker build -t sky-php-api .
+docker run --rm -p 8080:8080 -e APP_KEY='base64:REPLACE_WITH_A_REAL_KEY' sky-php-api
 ```
 
-GitHub Actions runs syntax checks, deterministic queue tests, the container build, non-root verification, and an HTTP health smoke test.
+The runtime image uses an unprivileged UID rather than root. Supply a generated Laravel `APP_KEY` in deployed environments; do not commit it.
 
-## Product boundary
+## Architecture
 
-This checkpoint is an in-memory queue/API foundation. It does **not** claim durable persistence, distributed processing, authentication/authorization, Laravel framework parity, worker execution, HA, tenant isolation, managed deployment, or production SLA readiness. Those capabilities require separate implementation and verification.
+Laravel owns HTTP routing, request validation, JSON responses, application bootstrap, and dependency injection. `src/JobQueue.php` remains a framework-independent queue domain with bounded identifiers, duplicate rejection, priority validation, stable ordering, and deterministic unit tests. `AppServiceProvider` registers one queue instance for the process lifetime.
 
-## SKYCOIN4444 integration targets
+This separation keeps the domain reusable while making the repository truthfully match its Laravel name.
 
-The service can be adapted as a bounded internal job-ingress component for feed indexing, notifications, media processing, school workflows, marketplace tasks, or other ecosystem modules after authentication, persistence, observability, and deployment controls are added.
+## SKYCOIN4444 integration
 
-## License
+Use the versioned HTTP API as an independently deployable internal boundary for bounded job ingress such as feed indexing, notifications, media processing, school workflows, or marketplace tasks. Authentication, durable queueing, workers, retries/dead-letter handling, persistence, authorization, tenant isolation, metrics export, and distributed coordination belong in explicit future adapters rather than being implied here.
 
-See `LICENSE`.
+## Limits
+
+This beta is **not** a durable job broker, worker platform, multi-node queue, HA deployment, or production SLA. Process restarts lose queued jobs. Deployment security and infrastructure validation remain pending.
+
+See `SECURITY.md` and `CHANGELOG.md`.
