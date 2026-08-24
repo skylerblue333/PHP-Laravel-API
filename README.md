@@ -1,44 +1,51 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# Sky Laravel API
 
-## Project profile and code-audit snapshot
+**Status: engineering beta.** This repository is a focused PHP 8.3 / Laravel 12 HTTP API productization checkpoint. The legacy Python placeholder remains in Git history and is no longer the active runtime on this branch.
 
-**What this is:** **PHP-Laravel-API** is a public repository described as: “RESTful API built with modern PHP 8 and Laravel patterns. #SkyCoin4444 #AI #Blockchain #DevOps #Innovation” Its dominant language signals are **Python (4 files)**.
+## What it provides
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **18 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+- `GET /api/health` — liveness response.
+- `GET /api/ready` — lightweight application readiness response.
+- `POST /api/echo` — validated JSON request example with bounded input and generated request object ID.
+- Laravel validation and JSON-aware exception handling.
+- PHPUnit/Testbench feature coverage for health and validation behavior.
+- Composer validation/audit, Laravel Pint, route boot verification, Docker build, and non-root image verification in CI.
 
-**Implementation evidence:** 2 test-related file(s) detected; 2 dependency or package manifest(s) detected; 2 build/CI/infrastructure signal(s) detected; and 3 documentation or governance file(s) detected. Test filenames observed include `tests/__init__.py`, `tests/test_main.py`. Dependency or package files include `package.json`, `requirements.txt`. Build, CI, or infrastructure signals include `Dockerfile`, `.github/workflows/ci.yml`.
+## Local verification
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+Requirements: PHP 8.3+ and Composer 2.
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+```bash
+cp .env.example .env
+composer install
+php artisan route:list
+composer test
+vendor/bin/pint --test
+composer audit --locked
+php artisan serve --host=127.0.0.1 --port=8080
+```
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+Then call `http://127.0.0.1:8080/api/health`.
 
----
+## Container
 
-# Php Laravel Api
+```bash
+docker build -t sky-laravel-api .
+docker run --rm -p 8080:8080 sky-laravel-api
+```
 
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/PHP-Laravel-API?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/PHP-Laravel-API?style=flat-square)
+The runtime image uses an unprivileged application user. Environment defaults intentionally disable debug output.
 
-## 🌟 Overview
-**PHP-Laravel-API** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **Python**.
+## Architecture
 
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
+`public/index.php` is the HTTP entrypoint. `bootstrap/app.php` configures Laravel and loads `routes/api.php`. The current product deliberately avoids database state, queues, authentication, external services, and hidden infrastructure dependencies so its verified surface stays small and truthful.
 
-## 🛠️ Technology Stack
-- **Primary Domain**: Python
-- **Ecosystem**: SkyCoin4444 Digital Platform
+## SKYCOIN4444 integration
 
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
+This service can serve as a reusable Laravel-side adapter or bounded API example for the wider ecosystem. Integration should happen through documented HTTP contracts rather than copying the implementation into another repository.
 
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
+## Boundaries
 
----
-*Powered by SkyCoin4444*
+This checkpoint does **not** claim production deployment, persistent storage, tenant isolation, RBAC, HA, queue processing, rate limiting, TLS termination, or a complete business API. Those require separate implementation and runtime evidence before being advertised.
+
+See `SECURITY.md` for security boundaries and `CHANGELOG.md` for productization history.
