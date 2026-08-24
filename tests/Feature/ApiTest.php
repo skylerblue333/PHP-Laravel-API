@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Illuminate\Routing\Router;
 use Orchestra\Testbench\TestCase;
 
 final class ApiTest extends TestCase
