@@ -1,12 +1,38 @@
-name: CI
-on: [push, pull_request]
+name: laravel-ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
         with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - run: pytest tests/ -v
+          php-version: '8.3'
+          coverage: none
+      - name: Validate Composer manifest
+        run: composer validate --strict --no-check-lock
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: PHP syntax
+        run: find app bootstrap public routes tests/Feature -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Laravel boot and routes
+        run: |
+          cp .env.example .env
+          php artisan route:list
+      - name: Feature tests
+        run: composer test
+      - name: Pint
+        run: vendor/bin/pint --test
+      - name: Composer audit
+        run: composer audit --locked
+      - name: Build image
+        run: docker build -t sky-laravel-api:ci .
+      - name: Verify non-root image
+        run: test "$(docker run --rm --entrypoint=id sky-laravel-api:ci -u)" != "0"
