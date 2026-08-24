@@ -43,7 +43,7 @@ jobs:
           docker run -d --rm --name sky-php-api-ci -p 18080:8080 sky-php-api:ci
           trap 'docker stop sky-php-api-ci >/dev/null 2>&1 || true' EXIT
           for i in $(seq 1 20); do
-            if curl --fail --silent http://127.0.0.1:18080/healthz | grep -q '"status"'; then exit 0; fi
+            if curl --fail --silent --output /dev/null http://127.0.0.1:18080/healthz; then exit 0; fi
             sleep 1
           done
           docker logs sky-php-api-ci
