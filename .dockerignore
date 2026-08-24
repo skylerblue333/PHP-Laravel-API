@@ -1,0 +1,11 @@
+.git
+.github
+.env
+.env.*
+vendor
+.phpunit.cache
+tests
+*.log
+README.md
+SECURITY.md
+CHANGELOG.md
